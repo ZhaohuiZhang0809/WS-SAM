@@ -14,7 +14,7 @@ from models.common import Mlp, PatchEmbed, PatchMerging, DWConv
 class PCWAttention(nn.Module):
     r""" Pixel-Channel Windows hybrid Attention """
 
-    def __init__(self, dim, input_resolution, num_heads=8, window_size=4, qk_scale=None, qkv_bias=True, proj_drop=0.):
+    def __init__(self, dim, input_resolution, num_heads=8, window_size=3, qk_scale=None, qkv_bias=True, proj_drop=0.):
         super().__init__()
 
         self.input_resolution = input_resolution
