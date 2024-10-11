@@ -123,7 +123,6 @@ class CAFormer(nn.Module):
 # if __name__ == '__main__':
 #     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #     net = MSPrompter(ref_chans=1, img_size=320).to(device)
-#     # 打印网络结构和参数
 #     summary(net, [(1, 6400, 96), (1, 1, 320, 320), (1, 11, 96)])
 
 if __name__ == "__main__":
