@@ -223,15 +223,14 @@ if __name__ == '__main__':
 
     print(points_coords)
 
-    # 第二个张量，包含点的标签 (labels)，形状为 (batch_size, num_points)
-    points_labels = torch.randint(0, 2, (2, 10))  # 生成随机的二元标签
-
-    # 组合成元组
+    # prompt_point_labels (batch_size, num_points)
+    points_labels = torch.randint(0, 2, (2, 10))
+    #
     points_tuple = (points_coords.cuda(), points_labels.cuda())
 
     sparse_embeddings = net(points_tuple, None, None)
     print(sparse_embeddings.size())
-    # # 打印网络结构和参数
+    
     # summary(net, [points_tuple, None, None, None])
 
     flops, params = profile(net, (points_tuple, None, None,))
