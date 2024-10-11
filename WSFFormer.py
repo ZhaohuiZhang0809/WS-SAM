@@ -196,5 +196,4 @@ if __name__ == "__main__":
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net = WSFFormer(in_channels=768, patch_size=10).to(device)
-    # 打印网络结构和参数
     summary(net, [(1, 100, 768), (1, 100, 768)])
