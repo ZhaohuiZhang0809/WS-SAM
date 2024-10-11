@@ -199,17 +199,14 @@ class PatchMerging(nn.Module):
         # reshape
         x = x.view(B, H, W, C)
 
-        # 在行、列方向以 stride = 2 等间隔抽样, 实现分辨率 1/2 下采样
         x0 = x[:, 0::2, 0::2, :]  # shape = (B, H/2, W/2, C)
         x1 = x[:, 1::2, 0::2, :]  # shape = (B, H/2, W/2, C)
         x2 = x[:, 0::2, 1::2, :]  # shape = (B, H/2, W/2, C)
         x3 = x[:, 1::2, 1::2, :]  # shape = (B, H/2, W/2, C)
 
-        # 拼接 使通道数加倍
         x = torch.cat([x0, x1, x2, x3], -1)  # shape = (B, H/2, W/2, 4*C)
         x = x.view(B, -1, 4 * C)  # shape = (B, H*W/4, 4*C)
 
-        # FC 使通道数减半
         x = self.norm(x)
         x = self.reduction(x)  # shape = (B, H*W/4, 2*C)
 
@@ -225,7 +222,7 @@ class PatchMerging(nn.Module):
         return flops
 
 
-# 2D DWT滤波
+# 2D DWT
 class Dwt2d(nn.Module):
     def __init__(self):
         super(Dwt2d, self).__init__()
@@ -249,7 +246,7 @@ class Dwt2d(nn.Module):
         return out
 
 
-# 2D IWT滤波
+# 2D IWT
 class Iwt2d(nn.Module):
     def __init__(self):
         super(Iwt2d, self).__init__()
@@ -283,10 +280,10 @@ class DWConv(nn.Module):
         super(DWConv, self).__init__()
 
         self.DWConv = nn.Sequential(
-            nn.Conv2d(in_channels, in_channels, 3, stride, padding, dilation, groups=in_channels),         # 深度卷积（Depth-wise Convolution）
+            nn.Conv2d(in_channels, in_channels, 3, stride, padding, dilation, groups=in_channels),         # Depth-wise Convolution
             nn.BatchNorm2d(in_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels, out_channels, 1),                                                       # 逐点卷积（Point-wise Convolution）
+            nn.Conv2d(in_channels, out_channels, 1),                                                       # Point-wise Convolution
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
@@ -454,7 +451,6 @@ class FinalPatchExpand_X4(nn.Module):
 
 
 # if __name__ == '__main__':
-#     # 生成一个随机的2x2矩阵
 #     random_data1 = torch.rand(2, 200, 4)
 #     random_data2 = torch.rand(2, 100, 4)
 #     CA = CrossAttention(4, 4)
