@@ -100,7 +100,6 @@ class Wavelet_Encoder(nn.Module):
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net = Wavelet_Encoder(in_channels=1).to(device)
-    # 打印网络结构和参数
     summary(net, (1, 320, 320))
 
 if __name__ == "__main__":
