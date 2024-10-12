@@ -152,7 +152,7 @@ class PCWFormerBlock(nn.Module):
         pool_w = self.pool_w(sp_x).view(B, C, W)
         pool_c = self.fc(self.pool_c(sp_x).view(B, C)).view(B, 1, C)
         spatial_affinity = torch.bmm(pool_h.permute(0, 2, 1), pool_w).view(B, 1, H, W)
-        spatial_weight_M = rearrange(self.DWConv(spatial_affinity), 'B C H W  -> B (H W) C', H=H)
+        spatial_weight_M = rearrange(nn.Sigmoid()(self.DWConv(spatial_affinity)), 'B C H W  -> B (H W) C', H=H)
         # spatial_attened_x = spatial_attn.expand_as(sp_x) * pool_c * sp_x + sp_x
 
         # PCWAttention
