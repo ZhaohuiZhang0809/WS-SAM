@@ -48,21 +48,21 @@ class PCWAttention(nn.Module):
         k_local, v_local = self.kv(x).chunk(2, dim=-1)
         k_local = F.normalize(k_local.reshape(B, L, self.num_heads, self.head_dim), dim=-1).reshape(B, L, -1)
         kv_local = torch.cat([k_local, v_local], dim=-1).permute(0, 2, 1).reshape(B, -1, H, W)
-        k_local, v_local = (self.unfold(kv_local).reshape(B, 2 * self.num_heads, self.head_dim, self.local_len, L)
-                            .permute(0, 1, 4, 2, 3).chunk(2, dim=1))
+       k_local, v_local = (self.unfold(kv_local).reshape(B, 2 * self.num_heads, self.head_dim, self.local_len, L)
+                            .permute(0, 1, 4, 2, 3).chunk(2, dim=1))    # b, h_n, global, h_d, local
 
-        attn_local = (q_pixel.unsqueeze(-2) @ k_local).squeeze(-2)
+        attn_local = (q_pixel.unsqueeze(-2) @ k_local).squeeze(-2)      # b, h_n, global, local
 
         _x = rearrange(x, 'B (H W) C ->  B C H W', H=H)
         q_pool = rearrange(self.pool_c(_x), 'B (n_h h_dim) H W -> B n_h (H W) h_dim', n_h=self.num_heads)
-        q_pool = q_pool.expand(-1, -1, L, -1).unsqueeze(-2)
+        q_pool = q_pool.expand(-1, -1, L, -1).unsqueeze(-2)             # b, h_n, global, 1, h_d
 
-        attn_pool = (q_pool @ k_local).squeeze(-2)
+        attn_pool = (q_pool @ k_local).squeeze(-2)                      # b, h_n, global, local
 
-        attn_score = attn_local + attn_pool + self.relative_pos_bias_local.unsqueeze(1)
-        attn_score = self.softmax(attn_score).unsqueeze(-2).permute(0, 1, 2, 4, 3)
+        attn_score = attn_local + attn_pool + self.relative_pos_bias_local.unsqueeze(1)     # b, h_n, global, local
+        attn_score = self.softmax(attn_score).unsqueeze(-2).permute(0, 1, 2, 4, 3)          # b, h_n, global, local, 1
 
-        x = rearrange((v_local @ attn_score).squeeze(-1), 'B n_h L h_d -> B L (n_h h_d)', n_h=self.num_heads)
+        x = rearrange((v_local @ attn_score).squeeze(-1), 'B n_h L h_d -> B L (n_h h_d)', n_h=self.num_heads)   # b, h_n, global, h_d, 1 -> b, global, c
 
         x = self.proj(x)
         x = self.proj_drop(x)
