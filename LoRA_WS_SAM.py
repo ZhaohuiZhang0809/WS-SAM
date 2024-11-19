@@ -80,29 +80,25 @@ class LoRA_Sam(nn.Module):
                 continue
 
             for former_i, former in enumerate(blk.blocks):
-                try:
-                    w_qkv_linear = former.attn.qkv
-                    self.dim = w_qkv_linear.in_features
-                    w_a_linear_q = nn.Linear(self.dim, r, bias=False)
-                    w_b_linear_q = nn.Linear(r, self.dim, bias=False)
-                    w_a_linear_v = nn.Linear(self.dim, r, bias=False)
-                    w_b_linear_v = nn.Linear(r, self.dim, bias=False)
-                    self.w_As.append(w_a_linear_q)
-                    self.w_Bs.append(w_b_linear_q)
-                    self.w_As.append(w_a_linear_v)
-                    self.w_Bs.append(w_b_linear_v)
-                    former.attn.qkv = _LoRA_qkv(
-                        w_qkv_linear,
-                        w_a_linear_q,
-                        w_b_linear_q,
-                        w_a_linear_v,
-                        w_b_linear_v,
-                    )
-                    self.reset_parameters()
-                    self.sam = sam_model
-
-                except Exception as e:
-                    print("捕获到了异常:", e)
+                w_qkv_linear = former.attn.qkv
+                self.dim = w_qkv_linear.in_features
+                w_a_linear_q = nn.Linear(self.dim, r, bias=False)
+                w_b_linear_q = nn.Linear(r, self.dim, bias=False)
+                w_a_linear_v = nn.Linear(self.dim, r, bias=False)
+                w_b_linear_v = nn.Linear(r, self.dim, bias=False)
+                self.w_As.append(w_a_linear_q)
+                self.w_Bs.append(w_b_linear_q)
+                self.w_As.append(w_a_linear_v)
+                self.w_Bs.append(w_b_linear_v)
+                former.attn.qkv = _LoRA_qkv(
+                    w_qkv_linear,
+                    w_a_linear_q,
+                    w_b_linear_q,
+                    w_a_linear_v,
+                    w_b_linear_v,
+                )
+                self.reset_parameters()
+                self.sam = sam_model
 
     def save_lora_parameters(self, filename: str) -> None:
         r"""Only safetensors is supported now.
