@@ -43,7 +43,7 @@ class _LoRA_qkv(nn.Module):
         return qkv
 
 
-class LoRA_Sam(nn.Module):
+class LoRA_WS_SAM(nn.Module):
     """Applies low-rank adaptation to a Sam model's image encoder.
 
     Args:
@@ -54,7 +54,7 @@ class LoRA_Sam(nn.Module):
     """
 
     def __init__(self, sam_model: WS_SAM, r: int, lora_layer=None):
-        super(LoRA_Sam, self).__init__()
+        super(LoRA_WS_SAM, self).__init__()
 
         assert r > 0
         # base_vit_dim = sam_model.image_encoder.patch_embed.proj.out_channels
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     sam = WS_SAM(img_size=320).to(device)
-    lora_sam = LoRA_Sam(sam, 4).to(device)
+    lora_sam = LoRA_WS_SAM(sam, 4).to(device)
     # lora_sam.sam.image_encoder(torch.rand(size=(1, 1, 320, 320)))
 
     inputs = torch.randn(1, 1, 320, 320).to(device)
