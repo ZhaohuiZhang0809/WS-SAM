@@ -48,7 +48,7 @@ class PCWAttention(nn.Module):
         k_local, v_local = self.kv(x).chunk(2, dim=-1)
         k_local = F.normalize(k_local.reshape(B, L, self.num_heads, self.head_dim), dim=-1).reshape(B, L, -1)
         kv_local = torch.cat([k_local, v_local], dim=-1).permute(0, 2, 1).reshape(B, -1, H, W)
-       k_local, v_local = (self.unfold(kv_local).reshape(B, 2 * self.num_heads, self.head_dim, self.local_len, L)
+        k_local, v_local = (self.unfold(kv_local).reshape(B, 2 * self.num_heads, self.head_dim, self.local_len, L)
                             .permute(0, 1, 4, 2, 3).chunk(2, dim=1))    # b, h_n, global, h_d, local
 
         attn_local = (q_pixel.unsqueeze(-2) @ k_local).squeeze(-2)      # b, h_n, global, local
@@ -152,7 +152,7 @@ class PCWFormerBlock(nn.Module):
         pool_w = self.pool_w(sp_x).view(B, C, W)
         pool_c = self.fc(self.pool_c(sp_x).view(B, C)).view(B, 1, C)
         spatial_affinity = torch.bmm(pool_h.permute(0, 2, 1), pool_w).view(B, 1, H, W)
-        spatial_weight_M = rearrange(nn.Sigmoid()(self.DWConv(spatial_affinity)), 'B C H W  -> B (H W) C', H=H)
+        spatial_weight_M = rearrange(self.DWConv(spatial_affinity), 'B C H W  -> B (H W) C', H=H)
         # spatial_attened_x = spatial_attn.expand_as(sp_x) * pool_c * sp_x + sp_x
 
         # PCWAttention
