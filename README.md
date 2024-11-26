@@ -11,7 +11,13 @@ Retinal vascular diseases often lead to vision impairment and blindness. Optical
   
 * **Pixel-wise Image Encoder(PWA-Former)**
 
-<p align="center">
-  <img src="assets/all_heatmap.png" alt="all_heatmap" width="40%">
-</p>
+* **Wavelet Spatial Fusion Module**
 
+* **Meta Self-Prompter**
+
+* **Mask Decoder**
+
+## Heatmap Results
+<p align="center">
+  <img src="assets/all_heatmap.png" alt="all_heatmap" width="50%">
+</p>
