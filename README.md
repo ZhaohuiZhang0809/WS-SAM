@@ -17,6 +17,12 @@ Retinal vascular diseases often lead to vision impairment and blindness. Optical
 
 * **Mask Decoder**
 
+
+## Main Results
+<p align="center">
+  <img src="assets/compara.png" alt="all_heatmap" width="70%">
+</p>
+
 ## Heatmap Results
 <p align="center">
   <img src="assets/all_heatmap.png" alt="all_heatmap" width="50%">
