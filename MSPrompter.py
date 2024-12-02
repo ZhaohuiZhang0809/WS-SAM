@@ -44,7 +44,7 @@ class MSPrompter(nn.Module):
         )
 
         self.image_encoder = Image_Encoder(img_size=img_size, patch_size=4, in_chans=1, num_classes=1, window_size=3,
-                                           depths=[6], num_heads=[3])
+                                           depths=[4], num_heads=[3])
 
         self.DMPromptGen = DMPromptGen(dim)
 
@@ -83,16 +83,24 @@ class DMPromptGen(nn.Module):
         e_r2p = self.CAFormer(r_x, e_p1)
         e_q2r = self.CAFormer(q_x, r_x)
 
+        p_r = self.avgpool(e_r2p.permute(0, 2, 1))
+
+        e_q2r_ = rearrange(e_q2r, 'b (h w) c -> b c h w', h=self.size//4, w=self.size//4)
+        thresh = self.MLP(e_q2r)
+        thresh = rearrange(thresh, 'b (h w) c -> b c h w', h=self.size//4, w=self.size//4)
+        c_mask = self.Sim(e_q2r_.unsqueeze(1), p_r, thresh)
+        p_q = rearrange(self.MAP(e_q2r_, c_mask), 'b c h w -> b c (h w)')
+
         p_e = self.fc(
             torch.cat([
-                self.avgpool(e_r2p.permute(0, 2, 1)),
-                self.avgpool(e_q2r.permute(0, 2, 1))
+                p_r,
+                p_q
                 ], dim=1
             ).permute(0, 2, 1))
 
         # enhanced prototype
         e_q2r = e_q2r * p_e
-        e_q2p = self.CAFormer(q_x, e_q2r)   # e_q2r效果更好
+        e_q2p = self.CAFormer(q_x, e_q2r)
         # e_q2p = q_x * p_e
 
         # update prompt
