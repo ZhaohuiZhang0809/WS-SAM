@@ -62,6 +62,17 @@ class MSPrompter(nn.Module):
         return e_q2p, e_p3
 
 
+class MaskAvgPool2d(nn.Module):
+    def __init__(self,):
+        super(MaskAvgPool2d, self).__init__()
+
+    def forward(self, x, mask):
+        masked_x = x * mask
+
+        prototype = F.adaptive_avg_pool2d(masked_x, (1, 1))
+        return prototype
+
+
 class DMPromptGen(nn.Module):
     """ Dual-path Meta-prompt Generation"""
 
