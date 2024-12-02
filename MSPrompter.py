@@ -10,16 +10,6 @@ from models.common import PatchEmbed, DoubleConv, MultiCrossAttention, Mlp
 from models.Image_Encoder import PCWFormerBlock, Image_Encoder
 
 
-class MaskAvgPool2d(nn.Module):
-    def __init__(self,):
-        super(MaskAvgPool2d, self).__init__()
-
-    def forward(self, x, mask):
-        masked_x = x * mask
-
-        prototype = F.adaptive_avg_pool2d(masked_x, (1, 1))
-        return prototype
-
 
 class MSPrompter(nn.Module):
     def __init__(self, dim=96, ref_chans=1, img_size=320, patch_size=4, embed_dim=96, norm_layer=nn.LayerNorm,
@@ -54,7 +44,7 @@ class MSPrompter(nn.Module):
         )
 
         self.image_encoder = Image_Encoder(img_size=img_size, patch_size=4, in_chans=1, num_classes=1, window_size=3,
-                                           depths=[6], num_heads=[3])
+                                           depths=[4], num_heads=[3])
 
         self.DMPromptGen = DMPromptGen(dim, img_size)
 
@@ -70,6 +60,17 @@ class MSPrompter(nn.Module):
         e_q2p, e_p3 = self.DMPromptGen(query_x, r_x, reference_p)
 
         return e_q2p, e_p3
+
+
+class MaskAvgPool2d(nn.Module):
+    def __init__(self,):
+        super(MaskAvgPool2d, self).__init__()
+
+    def forward(self, x, mask):
+        masked_x = x * mask
+
+        prototype = F.adaptive_avg_pool2d(masked_x, (1, 1))
+        return prototype
 
 
 class DMPromptGen(nn.Module):
