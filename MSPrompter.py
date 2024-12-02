@@ -46,7 +46,7 @@ class MSPrompter(nn.Module):
         self.image_encoder = Image_Encoder(img_size=img_size, patch_size=4, in_chans=1, num_classes=1, window_size=3,
                                            depths=[4], num_heads=[3])
 
-        self.DMPromptGen = DMPromptGen(dim)
+        self.DMPromptGen = DMPromptGen(dim, img_size)
 
         self.norm = nn.LayerNorm(dim)
 
@@ -65,11 +65,15 @@ class MSPrompter(nn.Module):
 class DMPromptGen(nn.Module):
     """ Dual-path Meta-prompt Generation"""
 
-    def __init__(self, dim, mlp_ratio=4):
+    def __init__(self, dim, image_size, mlp_ratio=4, scaler=20):
         super(DMPromptGen, self).__init__()
 
         self.CAFormer = CAFormer(dim)
         self.avgpool = nn.AdaptiveAvgPool1d(1)
+
+        self.MAP = MaskAvgPool2d()
+        self.MLP = Mlp(dim)
+        self.scaler = scaler
 
         self.fc = nn.Sequential(
             nn.Linear(2 * dim, dim // mlp_ratio, bias=False),
@@ -77,6 +81,21 @@ class DMPromptGen(nn.Module):
             nn.Linear(dim // mlp_ratio, dim, bias=False),
             nn.Sigmoid()
         )
+
+    def Sim(self, fts, prototype, thresh):
+        """
+        Calculate the distance between features and prototypes
+
+        Args:
+            fts: input features
+                expect shape: N x C x H x W
+            prototype: prototype of one semantic class
+                expect shape: 1 x C
+        """
+        sim = -F.cosine_similarity(fts, prototype[..., None, None], dim=1) * self.scaler
+        coarse_mask = 1.0 - torch.sigmoid(0.5 * (sim - thresh))
+
+        return coarse_mask    
 
     def forward(self, q_x, r_x, r_p):
         e_p1 = self.CAFormer(r_p, r_x)
