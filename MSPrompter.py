@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from einops import rearrange
-from sklearn.cluster import KMeans
 from thop import profile
 from torch import nn
 import torch.nn.functional as F
@@ -9,6 +8,17 @@ from torchinfo import summary
 
 from models.common import PatchEmbed, DoubleConv, MultiCrossAttention, Mlp
 from models.Image_Encoder import PCWFormerBlock, Image_Encoder
+
+
+class MaskAvgPool2d(nn.Module):
+    def __init__(self,):
+        super(MaskAvgPool2d, self).__init__()
+
+    def forward(self, x, mask):
+        masked_x = x * mask
+
+        prototype = F.adaptive_avg_pool2d(masked_x, (1, 1))
+        return prototype
 
 
 class MSPrompter(nn.Module):
@@ -44,7 +54,7 @@ class MSPrompter(nn.Module):
         )
 
         self.image_encoder = Image_Encoder(img_size=img_size, patch_size=4, in_chans=1, num_classes=1, window_size=3,
-                                           depths=[4], num_heads=[3])
+                                           depths=[6], num_heads=[3])
 
         self.DMPromptGen = DMPromptGen(dim, img_size)
 
@@ -62,22 +72,12 @@ class MSPrompter(nn.Module):
         return e_q2p, e_p3
 
 
-class MaskAvgPool2d(nn.Module):
-    def __init__(self,):
-        super(MaskAvgPool2d, self).__init__()
-
-    def forward(self, x, mask):
-        masked_x = x * mask
-
-        prototype = F.adaptive_avg_pool2d(masked_x, (1, 1))
-        return prototype
-
-
 class DMPromptGen(nn.Module):
     """ Dual-path Meta-prompt Generation"""
 
     def __init__(self, dim, image_size, mlp_ratio=4, scaler=20):
         super(DMPromptGen, self).__init__()
+        self.size = image_size
 
         self.CAFormer = CAFormer(dim)
         self.avgpool = nn.AdaptiveAvgPool1d(1)
@@ -106,7 +106,7 @@ class DMPromptGen(nn.Module):
         sim = -F.cosine_similarity(fts, prototype[..., None, None], dim=1) * self.scaler
         coarse_mask = 1.0 - torch.sigmoid(0.5 * (sim - thresh))
 
-        return coarse_mask    
+        return coarse_mask
 
     def forward(self, q_x, r_x, r_p):
         e_p1 = self.CAFormer(r_p, r_x)
@@ -129,9 +129,9 @@ class DMPromptGen(nn.Module):
             ).permute(0, 2, 1))
 
         # enhanced prototype
-        e_q2r = e_q2r * p_e
-        e_q2p = self.CAFormer(q_x, e_q2r)
-        # e_q2p = q_x * p_e
+        # e_q2r = e_q2r * p_e
+        # e_q2p = self.CAFormer(q_x, e_q2r)
+        e_q2p = q_x * p_e
 
         # update prompt
         e_p2 = self.CAFormer(e_p1, e_q2r)
