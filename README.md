@@ -26,10 +26,12 @@ Retinal vascular diseases often lead to vision impairment and blindness. Optical
 -->
 
 ## Heatmap Results
+* **Visualization of attention heatmap comparison.**
 <p align="center">
   <img src="assets/all_heatmap.png" alt="all_heatmap" width="50%">
 </p>
 
+* **Visualization of heatmap performance during the prompt transfer process.**
 <p align="center">
   <img src="assets/MSPrompter_layer_analysis.png" alt="all_heatmap" width="50%">
 </p>
