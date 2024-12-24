@@ -1,6 +1,6 @@
 <div align="center">
-<h1>WS-SAM </h1>
-<h3>WS-SAM: Self-Prompt SAM with Wavelet and Spatial Domain for OCTA Vessel Segmentation</h3>
+<h1>WS-SAM: Self-Prompt SAM with Wavelet and Spatial Domain for OCTA Vessel Segmentation</h1>
+<h3>The complete source code will be made public after the paper is accepted.</h3>
 </div>
 
 ## Abstract
