@@ -36,6 +36,12 @@ Retinal vascular diseases often lead to vision impairment and blindness. Optical
   <img src="assets/MSPrompter_layer_analysis.png" alt="layer_analysis" width="50%">
 </p>
 
+## New Dataset
+
+<p align="center">
+  <img src="assets/dataset_display.png" alt="dataset_display" width="50%">
+</p>
+
 ## Main Results
 <p align="center">
   <img src="assets/compara.png" alt="compara" width="100%">
